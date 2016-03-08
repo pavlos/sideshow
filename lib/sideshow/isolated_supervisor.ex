@@ -17,37 +17,30 @@ defmodule Sideshow.IsolatedSupervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  defp start_child(max_restarts) do
+  defp start_task_supervisor(max_restarts) do
     # this is the code that starts the subsupervisor - i.e. the wrapper around the job
     # the task is in run transient mode so that it can be retried
     {:ok, _pid} = Supervisor.start_child __MODULE__, [[max_restarts: max_restarts, restart: :transient]]
+  end
+
+  def perform_async(module, function, args, opts \\ [])  do
+    ( fn -> apply(module, function, args) end ) |>
+    perform_async(opts)
   end
 
   def perform_async(function, opts \\ []) do
     retries = opts[:retries] || 0
     delay = opts[:delay] || false
 
-    {:ok, task_supervisor_pid} = start_child(retries)
+    {:ok, task_supervisor_pid} = start_task_supervisor(retries)
 
-    Task.Supervisor.start_child task_supervisor_pid, fn->
+    {status, _pid} = Task.Supervisor.start_child task_supervisor_pid, fn->
       if delay, do: :timer.sleep delay
-
       function.() # do we need to check for error return
       Supervisor.stop task_supervisor_pid, :shutdown
     end
+
+    status
   end
 
-  def perform_async(module, function, args, opts \\ [])  do
-    retries = opts[:retries] || 0
-    delay = opts[:delay] || false
-
-    {:ok, task_supervisor_pid} = start_child(retries)
-
-    Task.Supervisor.start_child task_supervisor_pid, fn->
-      if delay, do: :timer.sleep delay
-
-      apply(module, function, args)
-      Supervisor.stop task_supervisor_pid, :shutdown
-    end
-  end
 end
