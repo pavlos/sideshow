@@ -7,7 +7,9 @@ defmodule Sideshow.Mixfile do
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     package: package,
+     deps: deps,
+     description: description]
   end
 
   # Configuration for the OTP application
@@ -31,4 +33,18 @@ defmodule Sideshow.Mixfile do
   defp deps do
     []
   end
+
+  defp description do
+    """
+    Background jobs OTP style
+    """
+  end
+
+  defp package do
+    [# These are the default files included in the package
+     maintainers: ["Paul Hierommnimon"],
+     licenses: ["GNU GPLv3"],
+     links: %{"GitHub" => "https://github.com/pavlos/sideshow",
+              "Docs" => "https://github.com/pavlos/sideshow"}]
+    end
 end
