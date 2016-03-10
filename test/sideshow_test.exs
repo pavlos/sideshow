@@ -81,20 +81,39 @@ defmodule SideshowTest do
 
   test "delay option" do
     Sideshow.perform_async successful_test_function, delay: 200
-    refute received_message? :job_succeeded
+    refute received_message? :job_succeeded, 199
     assert received_message? :job_succeeded, 200
   end
 
   test "only delay first time" do
-
-  end
-
-  test "skip backoff" do
-
+    capture_log fn ->
+      Sideshow.perform_async failing_test_function, delay: 200, retries: 2, backoff: false
+      assert received_message? :job_failed, 210
+      assert received_message? :job_failed
+      assert received_message? :job_failed
+    end
   end
 
   test "backoff" do
+    backoff_intervals = (1..3) |> Enum.map(&Sideshow.Backoff.exponential/1)
 
+    capture_log fn ->
+      Sideshow.perform_async failing_test_function, retries: 3
+      assert received_message? :job_failed
+      Enum.each backoff_intervals, fn(interval) ->
+        refute received_message? :job_failed, (interval - 1)
+        assert received_message? :job_failed, interval
+      end
+    end
+  end
+
+  test "skip backoff" do
+    capture_log fn ->
+      Sideshow.perform_async failing_test_function, retries: 2, backoff: false
+      assert received_message? :job_failed
+      assert received_message? :job_failed
+      assert received_message? :job_failed
+    end
   end
 
   defp received_message?(message, timeout \\ 10) do

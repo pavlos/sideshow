@@ -54,17 +54,13 @@ defmodule Sideshow.IsolatedSupervisor do
   end
 
   defp wait(delay, backoff?, tries, tries_left) do
-    try_number = tries - tries_left + 1
+    try_number = tries - tries_left
 
-    if try_number == 1 do
+    if try_number == 0 do
       if delay, do: :timer.sleep(delay)
     else
-      if backoff?, do: try_number |> backoff |> :timer.sleep
+      if backoff?, do: try_number |> Sideshow.Backoff.exponential |> :timer.sleep
     end
-  end
-
-  defp backoff(n) do
-    :math.pow(2, n) * 1000 |>  trunc
   end
 
   defp parse_opts(opts) do
