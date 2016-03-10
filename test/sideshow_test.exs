@@ -25,7 +25,7 @@ defmodule SideshowTest do
 
   test "a task is allowed to be retried n times" do
     capture_log fn ->
-      Sideshow.perform_async failing_test_function, retries: 2
+      Sideshow.perform_async failing_test_function, retries: 2, backoff: false
 
       Enum.each 1..3, fn(_) ->
         #get the message 3 times - once, plus two retries
@@ -52,7 +52,7 @@ defmodule SideshowTest do
 
   test "a sub supervisor is stopped after failing" do
     capture_log fn ->
-      Sideshow.perform_async failing_test_function, retries: 2
+      Sideshow.perform_async failing_test_function, retries: 2, backoff: false
       assert Supervisor.count_children(Sideshow.IsolatedSupervisor).active == 1
 
       Enum.each 1..3, fn(_) ->
@@ -69,7 +69,7 @@ defmodule SideshowTest do
       # max 3 restarts in 5 seconds - the otp default, means that we need to bring down a task subsubervisor at least 4
       # times to attempt to kill Sideshow.  In reality, it doesn't matter since the task subsupervisors are temporary
       Enum.each 1..5, fn(_) ->
-        Sideshow.perform_async failing_test_function, retries: 1
+        Sideshow.perform_async failing_test_function, retries: 1, backoff: false
       end
 
       sideshow_pid = context[:sideshow_pid]
@@ -85,6 +85,17 @@ defmodule SideshowTest do
     assert received_message? :job_succeeded, 200
   end
 
+  test "only delay first time" do
+
+  end
+
+  test "skip backoff" do
+
+  end
+
+  test "backoff" do
+
+  end
 
   defp received_message?(message, timeout \\ 10) do
     receive do
