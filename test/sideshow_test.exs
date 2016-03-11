@@ -1,19 +1,5 @@
 defmodule SideshowTest do
-  use ExUnit.Case, async: false
-  import ExUnit.CaptureLog
-
-  setup_all do
-    # stop sideshow so that we can link it to the test harness process instead of the application
-    Sideshow.stop
-  end
-
-  setup do
-    # give it some time to shut down from previous run
-    # TODO: figure out if we can just get notified insted of sleeping
-    :timer.sleep 10
-    {:ok, pid} = Sideshow.start
-    {:ok, [sideshow_pid: pid]}
-  end
+  use SideshowFunctionalTestCase
 
   test "a task is not retried by default" do
     capture_log fn ->
