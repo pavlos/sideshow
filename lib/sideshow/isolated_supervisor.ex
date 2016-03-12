@@ -27,7 +27,7 @@ defmodule Sideshow.IsolatedSupervisor do
                                                        restart: :transient]]
   end
 
-  def perform_async(function, opts \\ []) do
+  def perform_async(module, function, args, opts \\ []) do
     {retries, delay, backoff?} = parse_opts(opts)
     {:ok, task_supervisor_pid} = start_task_supervisor(retries)
 
@@ -41,16 +41,11 @@ defmodule Sideshow.IsolatedSupervisor do
 
       wait(delay, backoff?, tries, tries_left)
 
-      function.()
+      apply(module, function, args)
       Supervisor.stop task_supervisor_pid, :shutdown
     end
 
     status
-  end
-
-  def perform_async(module, function, args, opts \\ [])  do
-    ( fn -> apply(module, function, args) end ) |>
-    perform_async(opts)
   end
 
   defp wait(delay, backoff?, tries, tries_left) do

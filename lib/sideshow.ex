@@ -11,10 +11,10 @@ defmodule Sideshow do
   end
 
   def perform_async(function, opts \\ []) do
-    Sideshow.IsolatedSupervisor.perform_async function, opts
+    perform_async(:erlang, :apply, [function, []], opts)
   end
 
-  def perform_async(module, function, args, opts \\ [])  do
+  def perform_async(module, function, args, opts \\ []) when is_list(args) do
     Sideshow.IsolatedSupervisor.perform_async module, function, args, opts
   end
 end
