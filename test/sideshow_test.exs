@@ -116,6 +116,21 @@ defmodule SideshowTest do
     end
   end
 
+  test "multiple sideshows are independent", context do
+    assert Process.alive? context[:sideshow_pid]
+
+    {:ok, other_sideshow} = Sideshow.start(:another)
+    :ok = Sideshow.stop
+
+    refute Process.alive? context[:sideshow_pid]
+    assert Process.alive? other_sideshow
+
+    assert catch_exit(Sideshow.perform_async successful_test_function)
+    Sideshow.perform_async successful_test_function, instance_name: :another
+    assert received_message? :job_succeeded
+  end
+
+
   defp received_message?(message, timeout \\ 10) do
     receive do
       ^message -> true
