@@ -1,13 +1,16 @@
 defmodule Sideshow do
 
-  def start, do: start(nil, nil)
-
-  def start(_type, _args) do
-    Sideshow.IsolatedSupervisor.start_link
+  def start(instance_name \\ Sideshow) do
+    start nil, instance_name: instance_name
   end
 
-  def stop do
-    Sideshow.IsolatedSupervisor.stop
+  def start(_type, args) do
+    instance_name = args[:instance_name] || Sideshow
+    Sideshow.IsolatedSupervisor.start_link instance_name
+  end
+
+  def stop(instance_name \\ Sideshow) do
+    Sideshow.IsolatedSupervisor.stop instance_name
   end
 
   def perform_async(function, opts \\ []) do

@@ -11,7 +11,7 @@ defmodule SideshowFunctionalTestCase do
   defmacro __using__(_opts) do
 
     quote do
-      use ExUnit.Case, async: false
+      use ExUnit.Case, async: true
       import ExUnit.CaptureLog
 
       setup do

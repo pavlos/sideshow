@@ -8,7 +8,7 @@ end
 
 
 defmodule JobTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   import Mock
 
   test "calling perform_async makes Sideshow call the perform method with args passed to `use`" do

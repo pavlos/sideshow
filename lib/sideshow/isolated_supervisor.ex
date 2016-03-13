@@ -3,12 +3,12 @@ defmodule Sideshow.IsolatedSupervisor do
 
   @one_billion_years 60*60*24*365*1_000_000_000
 
-  def start_link do
-    Supervisor.start_link(__MODULE__, nil, name: __MODULE__)
+  def start_link(instance_name) do
+    Supervisor.start_link(__MODULE__, nil, name: instance_name)
   end
 
-  def stop do
-    Supervisor.stop(__MODULE__, :shutdown)
+  def stop(instance_name) do
+    Supervisor.stop(instance_name, :normal)
   end
 
   def init(_) do
@@ -19,24 +19,24 @@ defmodule Sideshow.IsolatedSupervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  defp start_task_supervisor(max_restarts) do
+  defp start_task_supervisor(instance_name, max_restarts) do
     # this is the code that starts the subsupervisor - i.e. the wrapper around the job
     # the task is in run transient mode so that it can be retried
-    {:ok, _pid} = Supervisor.start_child __MODULE__, [[max_restarts: max_restarts,
-                                                       max_seconds: @one_billion_years,
-                                                       restart: :transient]]
+    {:ok, _task_supervisor_pid} = Supervisor.start_child instance_name, [[max_restarts: max_restarts,
+                                                                          max_seconds: @one_billion_years,
+                                                                          restart: :transient]]
   end
 
-  def perform_async(module, function, args, opts \\ []) do
-    {retries, delay, backoff?} = parse_opts(opts)
-    {:ok, task_supervisor_pid} = start_task_supervisor(retries)
+  def perform_async(module, function, args, opts) do
+    {retries, delay, backoff?, instance_name} = parse_opts(opts)
+    {:ok, task_supervisor_pid} = start_task_supervisor(instance_name, retries)
 
     tries = retries + 1
 
     # need to keep a counter of retries to use in backoff functions
     try_counter = Sideshow.TryCounter.spawn(tries, task_supervisor_pid)
 
-    {status, _pid} = Task.Supervisor.start_child task_supervisor_pid, fn->
+    {status, _job_pid} = Task.Supervisor.start_child task_supervisor_pid, fn->
       tries_left = Sideshow.TryCounter.decrement try_counter
 
       wait(delay, backoff?, tries, tries_left)
@@ -45,7 +45,7 @@ defmodule Sideshow.IsolatedSupervisor do
       Supervisor.stop task_supervisor_pid, :shutdown
     end
 
-    status
+    {status, task_supervisor_pid}
   end
 
   defp wait(delay, backoff?, tries, tries_left) do
@@ -59,6 +59,7 @@ defmodule Sideshow.IsolatedSupervisor do
   end
 
   defp parse_opts(opts) do
+      instance_name = opts[:instance_name] || Sideshow
       retries = opts[:retries] || 0
       delay = opts[:delay] || false
       backoff? =  case opts[:backoff] do
@@ -66,7 +67,7 @@ defmodule Sideshow.IsolatedSupervisor do
                     _ -> true
                   end
 
-    {retries, delay, backoff?}
+    {retries, delay, backoff?, instance_name}
   end
 
 end

@@ -1,6 +1,5 @@
 defmodule SideshowTest do
   use SideshowFunctionalTestCase
-  import Mock
 
   test "a task is not retried by default" do
     capture_log fn ->
@@ -27,27 +26,27 @@ defmodule SideshowTest do
   test "sub supervisor is stopped after successfully performing a task" do
     Sideshow.perform_async successful_test_function
 
-    assert Supervisor.count_children(Sideshow.IsolatedSupervisor).active == 1
+    assert Supervisor.count_children(Sideshow).active == 1
     assert received_message? :job_succeeded
 
     # give it some time to shut down
     # TODO: figure out if we can just get notified insted of sleeping
     :timer.sleep 10
 
-    assert Supervisor.count_children(Sideshow.IsolatedSupervisor).active == 0
+    assert Supervisor.count_children(Sideshow).active == 0
   end
 
   test "a sub supervisor is stopped after failing" do
     capture_log fn ->
       Sideshow.perform_async failing_test_function, retries: 2, backoff: false
-      assert Supervisor.count_children(Sideshow.IsolatedSupervisor).active == 1
+      assert Supervisor.count_children(Sideshow).active == 1
 
       Enum.each 1..3, fn(_) ->
         assert received_message? :job_failed
       end
 
       :timer.sleep 10
-      assert Supervisor.count_children(Sideshow.IsolatedSupervisor).active == 0
+      assert Supervisor.count_children(Sideshow).active == 0
     end
   end
 
@@ -114,17 +113,6 @@ defmodule SideshowTest do
       assert received_message? :job_failed
       assert received_message? :job_failed
       assert received_message? :job_failed
-    end
-  end
-
-  test "perform_async lambda calls perform_async MFA" do
-    with_mock Sideshow.IsolatedSupervisor, [perform_async: fn(_m, _f, _a, _opts) -> :ok end] do
-      lambda = fn-> IO.puts("hi") end
-      Sideshow.perform_async lambda, delay: 4000, retries: 2, backoff: false
-      assert called(
-        Sideshow.IsolatedSupervisor.
-          perform_async(:erlang, :apply, [lambda, []], [delay: 4000, retries: 2, backoff: false])
-      )
     end
   end
 
