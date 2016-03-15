@@ -12,12 +12,12 @@ defmodule Sideshow.Future do
       {:sideshow_job_finished, ^future, result} ->
         Process.demonitor ref, [:flush]
         {:ok, result}
-      {:DOWN, ^ref, _, ^pid, reason} ->
-        exit({ {reason, pid}, {__MODULE__, :await, [future, timeout]} })
+      {:DOWN, ^ref, _, ^pid, reason} -> # process going down demonitors itself
+        exit({ {:error, reason}, {__MODULE__, :await, [future, timeout]} })
     after
       timeout ->
         Process.demonitor ref, [:flush]
-        exit({:timeout, {__MODULE__, :await, [future, timeout]}})
+        exit( { {:timeout, nil}, {__MODULE__, :await, [future, timeout]} } )
     end
   end
 
