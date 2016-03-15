@@ -130,36 +130,4 @@ defmodule SideshowTest do
     assert received_message? :job_succeeded
   end
 
-
-  defp received_message?(message, timeout \\ 10) do
-    receive do
-      ^message -> true
-    after
-      timeout -> false
-    end
-  end
-
-  defp successful_test_function do
-    me = self()
-    fn ->
-      send(me, :job_succeeded)
-    end
-  end
-
-  defp failing_test_function do
-    me = self()
-    fn ->
-      send(me, :job_failed)
-      raise RuntimeError
-    end
-  end
-
-  defp flush do
-    receive do
-      _ -> flush
-    after
-      0 -> :ok
-    end
-  end
-
 end

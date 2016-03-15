@@ -9,6 +9,10 @@ defmodule Sideshow.Job do
         Sideshow.perform_async __MODULE__, :perform, args, unquote(opts)
       end
 
+      def unquote(:"$handle_undefined_function")(:future, args) do
+        Sideshow.future __MODULE__, :perform, args, unquote(opts)
+      end
+
     end
   end
 

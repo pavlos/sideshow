@@ -11,7 +11,7 @@ defmodule SideshowFunctionalTestCase do
   defmacro __using__(_opts) do
 
     quote do
-      use ExUnit.Case, async: true
+      use ExUnit.Case, async: false
       import ExUnit.CaptureLog
 
       setup do
@@ -21,6 +21,39 @@ defmodule SideshowFunctionalTestCase do
         {:ok, pid} = Sideshow.start
         {:ok, [sideshow_pid: pid]}
       end
+
+
+      defp received_message?(message, timeout \\ 10) do
+        receive do
+          ^message -> true
+        after
+          timeout -> false
+        end
+      end
+
+      defp successful_test_function do
+        me = self()
+        fn ->
+          send(me, :job_succeeded)
+        end
+      end
+
+      defp failing_test_function do
+        me = self()
+        fn ->
+          send(me, :job_failed)
+          raise RuntimeError
+        end
+      end
+
+      defp flush do
+        receive do
+          _ -> flush
+        after
+          0 -> :ok
+        end
+      end
+
     end
 
   end
