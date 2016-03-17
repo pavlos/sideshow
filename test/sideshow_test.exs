@@ -4,8 +4,8 @@ defmodule SideshowTest do
   test "a task is not retried by default" do
     capture_log fn ->
       Sideshow.perform_async failing_test_function
-      assert received_message? :job_failed
-      refute received_message? :job_failed
+      assert_receive :job_failed, 10
+      refute_receive :job_failed, 10
     end
   end
 
@@ -15,11 +15,11 @@ defmodule SideshowTest do
 
       Enum.each 1..3, fn(_) ->
         #get the message 3 times - once, plus two retries
-        assert received_message? :job_failed
+        assert_receive :job_failed, 10
       end
 
       #make sure it doesn't happen again
-      refute received_message? :job_failed
+      refute_received :job_failed, 10
     end
   end
 
@@ -27,7 +27,7 @@ defmodule SideshowTest do
     Sideshow.perform_async successful_test_function
 
     assert Supervisor.count_children(Sideshow).active == 1
-    assert received_message? :job_succeeded
+    assert_receive :job_succeeded, 10
 
     # give it some time to shut down
     # TODO: figure out if we can just get notified insted of sleeping
@@ -42,7 +42,7 @@ defmodule SideshowTest do
       assert Supervisor.count_children(Sideshow).active == 1
 
       Enum.each 1..3, fn(_) ->
-        assert received_message? :job_failed
+        assert_receive :job_failed, 10
       end
 
       :timer.sleep 10
@@ -67,16 +67,16 @@ defmodule SideshowTest do
 
   test "delay option" do
     Sideshow.perform_async successful_test_function, delay: 200
-    refute received_message? :job_succeeded, 199
-    assert received_message? :job_succeeded, 200
+    refute_receive :job_succeeded, 199
+    assert_receive :job_succeeded, 200
   end
 
   test "only delay first time" do
     capture_log fn ->
       Sideshow.perform_async failing_test_function, delay: 200, retries: 2, backoff: false
-      assert received_message? :job_failed, 210
-      assert received_message? :job_failed
-      assert received_message? :job_failed
+      assert_receive :job_failed, 210
+      assert_receive :job_failed, 10
+      assert_receive :job_failed, 10
     end
   end
 
@@ -85,10 +85,10 @@ defmodule SideshowTest do
 
     capture_log fn ->
       Sideshow.perform_async failing_test_function, retries: 3
-      assert received_message? :job_failed # test that it doesn't backoff the first time
+      assert_receive :job_failed, 10 # test that it doesn't backoff the first time
       Enum.each backoff_intervals, fn(interval) ->
-        refute received_message? :job_failed, (interval - 1)
-        assert received_message? :job_failed, interval
+        refute_receive :job_failed, (interval - 1)
+        assert_receive :job_failed, interval
       end
     end
   end
@@ -99,20 +99,20 @@ defmodule SideshowTest do
 
     capture_log fn ->
       Sideshow.perform_async failing_test_function, retries: 1, delay: delay_time
-      refute received_message? :job_failed, delay_time - 1
-      assert received_message? :job_failed, delay_time
+      refute_receive :job_failed, delay_time - 1
+      assert_receive :job_failed, delay_time
 
-      refute received_message? :job_failed, backoff_time - 1
-      assert received_message? :job_failed, backoff_time
+      refute_receive :job_failed, backoff_time - 1
+      assert_receive :job_failed, backoff_time
     end
   end
 
   test "backoff: false" do
     capture_log fn ->
       Sideshow.perform_async failing_test_function, retries: 2, backoff: false
-      assert received_message? :job_failed
-      assert received_message? :job_failed
-      assert received_message? :job_failed
+      assert_receive :job_failed, 10
+      assert_receive :job_failed, 10
+      assert_receive :job_failed, 10
     end
   end
 
@@ -127,7 +127,7 @@ defmodule SideshowTest do
 
     assert catch_exit(Sideshow.perform_async successful_test_function)
     Sideshow.perform_async successful_test_function, instance_name: :another
-    assert received_message? :job_succeeded
+    assert_receive :job_succeeded, 10
   end
 
 end

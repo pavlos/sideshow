@@ -22,15 +22,6 @@ defmodule SideshowFunctionalTestCase do
         {:ok, [sideshow_pid: pid]}
       end
 
-
-      defp received_message?(message, timeout \\ 10) do
-        receive do
-          ^message -> true
-        after
-          timeout -> false
-        end
-      end
-
       defp successful_test_function do
         me = self()
         fn ->
