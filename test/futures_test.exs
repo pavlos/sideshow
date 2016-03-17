@@ -18,12 +18,12 @@ defmodule FuturesTest do
     refute future.returnable?
   end
 
-  test "await will only accept an awaitable future" do
+  test "yield! will only accept an awaitable future" do
     assert catch_error(
-      Sideshow.perform_async(successful_test_function) |> Future.await
+      Sideshow.perform_async(successful_test_function) |> Future.yield!
     )
 
-    assert Sideshow.future(successful_test_function) |> Future.await
+    assert Sideshow.future(successful_test_function) |> Future.yield!
   end
 
   test "yield will only accept an awaitable future" do
@@ -34,21 +34,21 @@ defmodule FuturesTest do
      assert Sideshow.future(successful_test_function) |> Future.yield
   end
 
-  test "await returns the result if successful" do
-    assert {:ok, 1} == Sideshow.future(fn-> 1 end) |> Future.await
+  test "yield! returns the result if successful" do
+    assert {:ok, 1} == Sideshow.future(fn-> 1 end) |> Future.yield!
   end
 
-  test "await exits if job fails" do
+  test "yield! exits if job fails" do
     capture_log fn ->
       assert {{:error, :shutdown}, _} = catch_exit(
-        Sideshow.future(fn-> 1/0 end) |> Future.await
+        Sideshow.future(fn-> 1/0 end) |> Future.yield!
       )
     end
   end
 
-  test "await exits if timeout is exceeded" do
+  test "yield! exits if timeout is exceeded" do
     assert {{:timeout, nil}, _} = catch_exit(
-      Sideshow.future(slow_function) |> Future.await(0)
+      Sideshow.future(slow_function) |> Future.yield!(0)
     )
   end
 

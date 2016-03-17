@@ -1,13 +1,13 @@
 defmodule Sideshow.Future do
   defstruct pid: nil, ref: nil, owner: nil, returnable?: false
 
-  def await(term, timeout \\ 5000)
+  def yield!(term, timeout \\ 5000)
 
-  def await({:ok, future}, timeout) do
-    await(future, timeout)
+  def yield!({:ok, future}, timeout) do
+    yield!(future, timeout)
   end
 
-  def await(%Sideshow.Future{ref: ref, pid: pid, returnable?: true} = future, timeout) do
+  def yield!(%Sideshow.Future{ref: ref, pid: pid, returnable?: true} = future, timeout) do
     receive do
       {:sideshow_job_finished, ^future, result} ->
         Process.demonitor ref, [:flush]
