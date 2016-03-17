@@ -20,4 +20,13 @@ defmodule JobTest do
     end
   end
 
+  test "calling future makes Sideshow call the perform method with args passed to `use`" do
+    with_mock Sideshow, [future: fn(_module, _function, _args, _opts) -> :ok end] do
+      TestJob.future 1, 2, 3, foo: 4
+      assert called(
+        Sideshow.future(TestJob, :perform, [1, 2, 3, [foo: 4]], delay: 4000, retries: 2, backoff: false)
+      )
+    end
+  end
+
 end
