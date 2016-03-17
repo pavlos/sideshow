@@ -62,7 +62,7 @@ defmodule FuturesTest do
 
   test "yield returns error if job fails" do
     capture_log fn ->
-      assert {:error, :shutdown} == Sideshow.future(fn-> 1/0 end) |> Future.yield
+      assert {:error, :shutdown} == Sideshow.future(fn-> raise "going down" end) |> Future.yield
     end
   end
 
@@ -104,7 +104,7 @@ defmodule FuturesTest do
 
   test "job died before being shut down" do
     capture_log fn ->
-      {:ok, future} = Sideshow.future(fn -> 1/0 end)
+      {:ok, future} = Sideshow.future(fn -> raise "mayday!" end)
       :timer.sleep 100
       Future.shutdown future
       refute_receive _
