@@ -2,9 +2,11 @@ defmodule FuturesTest do
   use SideshowFunctionalTestCase
   alias Sideshow.Future
 
-#await - we blow up
-#cancel - future blows up
-#yield  - nothing blows up
+  setup do
+    on_exit fn->
+      refute_received _
+    end
+  end
 
   test "future returns returnable future" do
     {:ok, future} = Sideshow.future successful_test_function
@@ -50,7 +52,9 @@ defmodule FuturesTest do
     )
   end
 
-  test "future still running if await exits if timeout is exceeded"
+  test "future still running if await exits if timeout is exceeded" do
+
+  end
 
   test "yield returns the result if successful" do
     assert {:ok, 1} == Sideshow.future(fn-> 1 end) |> Future.yield
@@ -78,10 +82,34 @@ defmodule FuturesTest do
     assert {:timeout, nil} == Future.yield(future, 0)
   end
 
-  test "shutdown returns a value if one was emmitted"
-  test "shutdown returns nothing if no value was emmitted"
-  test "shutdown kills the job"
-  test "the mailbox is empty in all these cases"
+  test "shutdown kills the job" do
+    {:ok, future} = slow_function(50) |> Sideshow.future
+    assert Process.alive? future.pid
+    Future.shutdown future
+    refute Process.alive? future.pid
+  end
+
+  test "no messages are received after shutdown" do
+    {:ok, future} = slow_function(50) |> Sideshow.future
+    Future.shutdown future
+    refute_receive _
+  end
+
+  test "job finished before being shut down" do
+    {:ok, future} = Sideshow.future(fn -> 42 end)
+    :timer.sleep 100
+    Future.shutdown future
+    refute_receive _
+  end
+
+  test "job died before being shut down" do
+    capture_log fn ->
+      {:ok, future} = Sideshow.future(fn -> 1/0 end)
+      :timer.sleep 100
+      Future.shutdown future
+      refute_receive _
+    end
+  end
 
   defp slow_function(sleep \\ 10) do
     fn ->

@@ -47,8 +47,14 @@ defmodule Sideshow.Future do
   end
 
   def shutdown(%Sideshow.Future{pid: pid, ref: ref} = future) do
-    Process.demonitor ref, [:flush]
-    # flush the result, if any
     Process.exit pid, :kill # TODO: should we kill through the supervisor instead?
+    Process.demonitor ref, [:flush]
+
+    receive do
+      {:sideshow_job_finished, ^future, result} -> nil
+    after
+     0 -> nil
+    end
+
   end
 end
