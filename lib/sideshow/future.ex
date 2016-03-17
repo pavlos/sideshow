@@ -1,5 +1,5 @@
 defmodule Sideshow.Future do
-  defstruct pid: nil, ref: nil, owner: nil, returnable?: false
+  defstruct pid: nil, ref: nil, owner: nil, yielding?: false
 
   def yield!(term, timeout \\ 5000)
 
@@ -7,20 +7,9 @@ defmodule Sideshow.Future do
     yield!(future, timeout)
   end
 
-  def yield!(%Sideshow.Future{ref: ref, pid: pid, returnable?: true} = future, timeout) do
-    receive do
-      {:sideshow_job_finished, ^future, result} ->
-        Process.demonitor ref, [:flush]
-        {:ok, result}
-      {:DOWN, ^ref, _, ^pid, reason} -> # process going down demonitors itself
-        exit({ {:error, reason}, {__MODULE__, :await, [future, timeout]} })
-    after
-      timeout ->
-        Process.demonitor ref, [:flush]
-        exit( { {:timeout, nil}, {__MODULE__, :await, [future, timeout]} } )
-    end
+  def yield!(future, timeout) do
+    do_yield(future, timeout, true)
   end
-
 
   def yield(term, timeout \\ 5000)
 
@@ -28,33 +17,39 @@ defmodule Sideshow.Future do
     yield(future, timeout)
   end
 
-  def yield(%Sideshow.Future{ref: ref, pid: pid, returnable?: true} = future, timeout) do
+  def yield(future, timeout) do
+    do_yield(future, timeout, false)
+  end
+
+  defp do_yield(%Sideshow.Future{ref: ref, pid: pid, yielding?: true, owner: owner} = future, timeout, cancel?)
+              when owner == self() do
     receive do
       {:sideshow_job_finished, ^future, result} ->
         Process.demonitor ref, [:flush]
         {:ok, result}
-      {:DOWN, ^ref, _, ^pid, reason} ->
+      {:DOWN, ^ref, _, ^pid, reason} -> # process going down demonitors itself
         {:error, reason}
     after
       timeout ->
+        if cancel?, do: cancel(future)
         {:timeout, nil}
     end
   end
 
-
-  def shutdown({_, future}) do
-    shutdown(future)
+  def cancel({_, future}) do
+    cancel(future)
   end
 
-  def shutdown(%Sideshow.Future{pid: pid, ref: ref} = future) do
+  def cancel(%Sideshow.Future{pid: pid, ref: ref} = future) do
     Process.exit pid, :kill # TODO: should we kill through the supervisor instead?
     Process.demonitor ref, [:flush]
 
     receive do
-      {:sideshow_job_finished, ^future, result} -> nil
+      {:sideshow_job_finished, ^future, _result} -> nil
     after
      0 -> nil
     end
 
+    :ok
   end
 end

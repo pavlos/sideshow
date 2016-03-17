@@ -29,14 +29,12 @@ defmodule Sideshow.IsolatedSupervisor do
 
   def perform_async(module, function, args, opts) do
     caller_pid = self()
-    {retries, delay, backoff?, instance_name, return?} = parse_opts(opts)
+    {retries, delay, backoff?, instance_name, yield?} = parse_opts(opts)
     {:ok, task_supervisor_pid} = start_task_supervisor(instance_name, retries)
 
-    monitor_ref = if return? do
-      monitor_ref = Process.monitor(task_supervisor_pid)
-    end
+    monitor_ref = if yield?, do: Process.monitor(task_supervisor_pid)
 
-    future = %Sideshow.Future{owner: caller_pid, ref: monitor_ref, pid: task_supervisor_pid, returnable?: return?}
+    future = %Sideshow.Future{owner: caller_pid, ref: monitor_ref, pid: task_supervisor_pid, yielding?: yield?}
     tries = retries + 1
 
     # need to keep a counter of retries to use in backoff functions
@@ -47,9 +45,8 @@ defmodule Sideshow.IsolatedSupervisor do
       wait(delay, backoff?, tries, tries_left)
       result = apply(module, function, args)
 
-      if return? do
-        send(caller_pid, {:sideshow_job_finished, future, result})
-      end
+      if yield?, do: send(caller_pid, {:sideshow_job_finished, future, result})
+
       :ok = Supervisor.terminate_child instance_name, task_supervisor_pid
     end
 
@@ -67,7 +64,7 @@ defmodule Sideshow.IsolatedSupervisor do
   end
 
   defp parse_opts(opts) do
-      return? = opts[:return] || false
+      yield? = opts[:yield?] || false
       instance_name = opts[:instance_name] || Sideshow
       retries = opts[:retries] || 0
       delay = opts[:delay] || false
@@ -76,7 +73,7 @@ defmodule Sideshow.IsolatedSupervisor do
                     _ -> true
                   end
 
-    {retries, delay, backoff?, instance_name, return?}
+    {retries, delay, backoff?, instance_name, yield?}
   end
 
 end

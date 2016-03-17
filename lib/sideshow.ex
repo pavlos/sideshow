@@ -18,7 +18,7 @@ defmodule Sideshow do
   end
 
   def future(module, function, args, opts \\ []) do
-    opts = Keyword.merge(opts, [return: true])
+    opts = Keyword.merge(opts, [yield?: true])
     Sideshow.IsolatedSupervisor.perform_async module, function, args, opts
   end
 

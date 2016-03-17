@@ -55,7 +55,7 @@ defmodule SideshowTest do
       # max 3 restarts in 5 seconds - the otp default, means that we need to bring down a task subsubervisor at least 4
       # times to attempt to kill Sideshow.  In reality, it doesn't matter since the task subsupervisors are temporary
       Enum.each 1..5, fn(_) ->
-        Sideshow.perform_async failing_test_function, retries: 1, backoff: false
+        Sideshow.perform_async failing_test_function, retries: 10, backoff: false
       end
 
       sideshow_pid = context[:sideshow_pid]
