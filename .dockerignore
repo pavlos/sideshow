@@ -1,0 +1,7 @@
+_build
+deps
+.idea
+.git
+.gitignore
+.dockerignore
+Dockerfile
