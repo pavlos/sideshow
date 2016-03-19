@@ -18,3 +18,10 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
           [applications: [:sideshow]]
         end
 
+
+## Running
+
+```bash
+docker build -t sideshow .
+docker run -it --rm sideshow
+```
