@@ -29,7 +29,7 @@ defmodule Sideshow.SchedulerPoller do
       interval -> :ok
     end
     last = :erlang.statistics(:scheduler_wall_time)
-    scheduler_usage(first, last) |> IO.inspect |> update_schedulerometer
+    scheduler_usage(first, last) |> update_schedulerometer
     poll(interval, last)
   end
 
@@ -58,23 +58,5 @@ defmodule Sideshow.SchedulerPoller do
       end
     )
   end
-
-
-  def test_listen do
-    (8090..9000) |>
-    Enum.map(fn(port)->
-      spawn_monitor fn ->
-        {:ok, listenSocket} = :gen_tcp.listen(port, [{:active, true}, :binary])
-        {:ok, acceptSocket} = :gen_tcp.accept(listenSocket)
-      end
-    end)
-
-  end
-
-
-  def fib_calc(0), do: 0
-  def fib_calc(1), do: 1
-  def fib_calc(n), do: fib_calc(n-1) + fib_calc(n-2)
-
   
 end

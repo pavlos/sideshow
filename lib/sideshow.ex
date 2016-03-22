@@ -1,10 +1,18 @@
 defmodule Sideshow do
+  import Supervisor.Spec, warn: false
 
   def start(instance_name \\ Sideshow) do
     start nil, instance_name: instance_name
   end
 
   def start(_type, args) do
+    children = [
+      worker(Sideshow.Schedulerometer, []),
+      worker(Sideshow.SchedulerPoller, [])
+    ]
+
+    Supervisor.start_link(children, strategy: :rest_for_one, name: Sideshow.SchedulerometerSupervisor)
+
     instance_name = args[:instance_name] || Sideshow
     Sideshow.IsolatedSupervisor.start_link instance_name
   end

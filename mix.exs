@@ -21,7 +21,8 @@ defmodule Sideshow.Mixfile do
      registered: [Sideshow,
                   Sideshow.IsolatedSupervisor,
                   Sideshow.Schedulerometer,
-                  Sideshow.SchedulerPoller]
+                  Sideshow.SchedulerPoller,
+                  Sideshow.SchedulerometerSupervisor]
     ]
   end
 
