@@ -18,7 +18,11 @@ defmodule Sideshow.Mixfile do
   def application do
     [applications: [:logger],
      mod: {Sideshow, []},
-     registered: [Sideshow.IsolatedSupervisor, Sideshow]]
+     registered: [Sideshow,
+                  Sideshow.IsolatedSupervisor,
+                  Sideshow.Schedulerometer,
+                  Sideshow.SchedulerPoller]
+    ]
   end
 
   # Dependencies can be Hex packages:

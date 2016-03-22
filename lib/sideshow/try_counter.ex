@@ -1,4 +1,5 @@
 defmodule Sideshow.TryCounter do
+
   def spawn(tries, supervisor) do
     {:ok, pid} = Agent.start fn ->
       # link agent to the task supervisor it gets killed when the supervisor gets killed
