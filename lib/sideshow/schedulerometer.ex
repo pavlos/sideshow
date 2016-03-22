@@ -8,4 +8,8 @@ defmodule Sideshow.Schedulerometer do
     Agent.get __MODULE__, fn(state)-> state end
   end
 
+  def set_poll_interval(interval) do
+    Sideshow.SchedulerPoller.set_poll_interval(interval)
+  end
+
 end
