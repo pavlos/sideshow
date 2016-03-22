@@ -2,9 +2,9 @@ defmodule Sideshow.SchedulerPoller do
 
   def start_link(poll_interval \\ 1000) do
     init()
-    pid = spawn_link(__MODULE__, :poll, [1000])
+    pid = spawn_link(__MODULE__, :poll, [poll_interval])
     unregister()
-    true = Process.register(__MODULE__, pid)
+    true = Process.register(pid, __MODULE__)
     {:ok, pid}
   end
 
