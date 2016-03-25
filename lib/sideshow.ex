@@ -1,11 +1,7 @@
 defmodule Sideshow do
 
   def start(instance_name \\ Sideshow) do
-    start nil, instance_name: instance_name
-  end
-
-  def start(_type, args) do
-    instance_name = args[:instance_name] || Sideshow
+    instance_name = instance_name || Sideshow
     Sideshow.IsolatedSupervisor.start_link instance_name
   end
 
