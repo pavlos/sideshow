@@ -1,14 +1,12 @@
-defmodule Sideshow.Schedulerometer do
+defmodule Sideshow.Tachometer do
   require Logger
 
   def start(poll_interval \\ 1000) do
-    IO.puts "Sideshow.Schedulerometer START WITH POLL INTERVAL #{poll_interval}"
-
-    Sideshow.SchedulerometerSupervisor.start_link(poll_interval)
+    Sideshow.TachometerSupervisor.start_link(poll_interval)
   end
 
   def stop do
-    Sideshow.SchedulerometerSupervisor.stop
+    Sideshow.TachometerSupervisor.stop
   end
 
   def start_link do

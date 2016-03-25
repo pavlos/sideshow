@@ -29,4 +29,4 @@ use Mix.Config
 #
 #     import_config "#{Mix.env}.exs"
 
-config :sideshow, schedulerometer_poll_interval: 1000
+config :sideshow, tachometer_poll_interval: 1000

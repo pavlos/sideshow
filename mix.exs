@@ -20,9 +20,9 @@ defmodule Sideshow.Mixfile do
      mod: {Sideshow.Application, []},
      registered: [Sideshow,
                   Sideshow.IsolatedSupervisor,
-                  Sideshow.Schedulerometer,
+                  Sideshow.Tachometer,
                   Sideshow.SchedulerPoller,
-                  Sideshow.SchedulerometerSupervisor]
+                  Sideshow.TachometerSupervisor]
     ]
   end
 

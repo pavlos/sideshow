@@ -2,7 +2,6 @@ defmodule Sideshow.SchedulerPoller do
   require Logger
 
   def start_link(poll_interval) do
-  IO.puts "POLLER WITH POLL INTERVAL #{poll_interval}"
     :erlang.system_flag(:scheduler_wall_time, true)
     initial_reading = :erlang.statistics(:scheduler_wall_time)
     pid = spawn_link(__MODULE__, :poll, [poll_interval, initial_reading])
@@ -30,7 +29,7 @@ defmodule Sideshow.SchedulerPoller do
       interval -> :ok
     end
     last = :erlang.statistics(:scheduler_wall_time)
-    scheduler_usage(first, last) |> update_schedulerometer
+    __scheduler_usage(first, last) |> update_tachometer
     poll(interval, last)
   end
 
@@ -39,7 +38,7 @@ defmodule Sideshow.SchedulerPoller do
     :ok
   end
 
-  defp scheduler_usage(first, last) do
+  def __scheduler_usage(first, last) do
     # TODO: consider making this asynchronous so that it gets
     #       factored into the statistics in the next loop
     {last_active,  last_total}  = reduce_sample(last)
@@ -47,8 +46,8 @@ defmodule Sideshow.SchedulerPoller do
     (last_active - first_active)/(last_total - first_total)
   end
 
-  defp update_schedulerometer(usage) do
-    Agent.cast Sideshow.Schedulerometer, fn(_old_usage)-> usage end
+  defp update_tachometer(usage) do
+    Agent.cast Sideshow.Tachometer, fn(_old_usage)-> usage end
   end
 
   defp reduce_sample(sample) do

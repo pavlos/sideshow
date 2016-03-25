@@ -8,7 +8,7 @@ catch
 end
 
 try do
-  Sideshow.Schedulerometer.stop
+  Sideshow.Tachometer.stop
 catch
   :exit, :noproc -> IO.puts "caught noproc"
 end

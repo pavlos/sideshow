@@ -1,9 +1,9 @@
-defmodule Sideshow.SchedulerometerSupervisor do
+defmodule Sideshow.TachometerSupervisor do
   import Supervisor.Spec
 
   def start_link(poll_interval) do
     children = [
-      worker(Sideshow.Schedulerometer, []),
+      worker(Sideshow.Tachometer, []),
       worker(Sideshow.SchedulerPoller, [poll_interval])
     ]
 
