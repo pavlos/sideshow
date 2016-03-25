@@ -1,5 +1,4 @@
 defmodule Sideshow.Application do
-  import Supervisor.Spec#, warn: false
 
   def start(_type, args) do
     poll_interval = args[:poll_interval] ||  Application.get_env(:sideshow, :tachometer_poll_interval)
