@@ -1,7 +1,8 @@
 defmodule Sideshow.SchedulerPoller do
   require Logger
 
-  def start_link(poll_interval \\ 1000) do
+  def start_link(poll_interval) do
+  IO.puts "POLLER WITH POLL INTERVAL #{poll_interval}"
     :erlang.system_flag(:scheduler_wall_time, true)
     initial_reading = :erlang.statistics(:scheduler_wall_time)
     pid = spawn_link(__MODULE__, :poll, [poll_interval, initial_reading])

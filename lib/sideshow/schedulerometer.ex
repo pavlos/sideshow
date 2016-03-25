@@ -1,6 +1,16 @@
 defmodule Sideshow.Schedulerometer do
   require Logger
 
+  def start(poll_interval \\ 1000) do
+    IO.puts "Sideshow.Schedulerometer START WITH POLL INTERVAL #{poll_interval}"
+
+    Sideshow.SchedulerometerSupervisor.start_link(poll_interval)
+  end
+
+  def stop do
+    Sideshow.SchedulerometerSupervisor.stop
+  end
+
   def start_link do
     {:ok, _pid} = Agent.start_link fn -> 0 end, name: __MODULE__
   end

@@ -17,7 +17,7 @@ defmodule Sideshow.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [applications: [:logger],
-     mod: {Sideshow, []},
+     mod: {Sideshow.Application, []},
      registered: [Sideshow,
                   Sideshow.IsolatedSupervisor,
                   Sideshow.Schedulerometer,

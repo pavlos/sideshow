@@ -7,6 +7,12 @@ catch
   :exit, :noproc -> IO.puts "caught noproc"
 end
 
+try do
+  Sideshow.Schedulerometer.stop
+catch
+  :exit, :noproc -> IO.puts "caught noproc"
+end
+
 defmodule SideshowFunctionalTestCase do
   defmacro __using__(_opts) do
 
