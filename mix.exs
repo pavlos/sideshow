@@ -16,13 +16,10 @@ defmodule Sideshow.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger],
+    [applications: [:logger, :tachometer],
      mod: {Sideshow.Application, []},
      registered: [Sideshow,
-                  Sideshow.IsolatedSupervisor,
-                  Sideshow.Tachometer,
-                  Sideshow.SchedulerPoller,
-                  Sideshow.TachometerSupervisor]
+                  Sideshow.IsolatedSupervisor]
     ]
   end
 
@@ -36,7 +33,8 @@ defmodule Sideshow.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:mock, "~> 0.1.1", only: :test}]
+    [{:tachometer, "~> 0.0.1"},
+     {:mock, "~> 0.1.1", only: :test}]
   end
 
   defp description do
