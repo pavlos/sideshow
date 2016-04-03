@@ -33,8 +33,9 @@ defmodule Sideshow.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:tachometer, "~> 0.0.1"},
-     {:mock, "~> 0.1.1", only: :test}]
+    [{:tachometer, "~> 0.1.1"},
+     {:mock, "~> 0.1.1", only: :test},
+     {:gen_fsm, "~>0.0.2"}]
   end
 
   defp description do
@@ -45,9 +46,9 @@ defmodule Sideshow.Mixfile do
 
   defp package do
     [# These are the default files included in the package
-     maintainers: ["Paul Hierommnimon"],
+     maintainers: ["Paul Hieromnimon"],
      licenses: ["GNU GPLv3"],
      links: %{"GitHub" => "https://github.com/pavlos/sideshow",
               "Docs" => "https://github.com/pavlos/sideshow"}]
-    end
+  end
 end
