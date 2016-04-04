@@ -84,6 +84,25 @@ defmodule FuturesTest do
     end
   end
 
+  test "yield! kills future before all retries exhausted" do
+    capture_log fn ->
+      {:ok, future} = Sideshow.future fn ->
+        :timer.sleep 50
+        raise "im a failure!"
+      end, retries: 2, backoff: false
+
+      assert {:timeout, nil}     == Future.yield! future, 100
+      refute Process.alive? future.pid
+      assert {:timeout, nil} == Future.yield! future, 100
+    end
+  end
+
+  test "try to yield! on canceled future times out" do
+    {:ok, future} = Sideshow.future slow_function(50)
+    Future.cancel future
+    assert {:timeout, nil} == Future.yield! future, 60
+  end
+
 
   ### yield ###
 
@@ -162,6 +181,24 @@ defmodule FuturesTest do
     end
   end
 
+  test "yield only reports shutdown after all retries exhausted, doesn't kill future" do
+    capture_log fn ->
+      {:ok, future} = Sideshow.future fn ->
+        :timer.sleep 50
+        raise "im a failure!"
+      end, retries: 2, backoff: false
+
+      assert {:timeout, nil}     == Future.yield future, 100
+      assert Process.alive? future.pid
+      assert {:error, :shutdown} == Future.yield future, 100
+    end
+  end
+
+  test "try to yield on canceled future times out" do
+    {:ok, future} = Sideshow.future slow_function(50)
+    Future.cancel future
+    assert {:timeout, nil} == Future.yield future, 60
+  end
 
   ### cancel ###
 
