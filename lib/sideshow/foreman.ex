@@ -8,13 +8,18 @@ defmodule Sideshow.Foreman do
   end
 
   def stop(pid) do
-    send_all_state_event(pid, :stop)
+    GenFSM.send_all_state_event(pid, :stop)
   end
 
   def work(pid) do
   "called work in pid #{inspect pid}"
-    send_event(pid, :work)
+    GenFSM.send_event(pid, :work)
   end
+
+    def work_sync(pid) do
+    "called work in pid #{inspect pid}"
+      GenFSM.sync_send_event(pid, :work)
+    end
 
   # Callbacks
 
@@ -29,7 +34,7 @@ defmodule Sideshow.Foreman do
   #end
 
   def working(:timeout, state_data) do
-    IO.puts "already working! - timed out!"
+    IO.puts "already working! - timed out! #{inspect self()}"
     {:next_state, :working, state_data, @timeout}
   end
 
@@ -48,6 +53,12 @@ defmodule Sideshow.Foreman do
     {:next_state, :working, state_data, @timeout}
   end
 
+  def stopped(:work, from, state_data) do
+    IO.puts "starting this thing - SYNC from #{inspect self()}"
+    {:reply, "howdy!", :working, state_data, @timeout}
+  end
+
+
   def handle_event(:stop, _from_state, state_data) do
    IO.puts "stopping"
    {:next_state, :stopped, state_data}
@@ -55,8 +66,7 @@ defmodule Sideshow.Foreman do
 
   def do_work(pid) do
     IO.puts "doing something"
-    :timer.sleep 500
+    :timer.sleep 50
     IO.puts "do_work pid is #{inspect pid}"
-    work pid
   end
 end
