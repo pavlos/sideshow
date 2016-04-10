@@ -1,4 +1,5 @@
-%{"gen_fsm": {:hex, :gen_fsm, "0.0.2"},
+%{"gen_fsm": {:hex, :gen_fsm, "0.0.4"},
   "meck": {:hex, :meck, "0.8.4"},
   "mock": {:hex, :mock, "0.1.3"},
-  "tachometer": {:hex, :tachometer, "0.1.1"}}
+  "tachometer": {:hex, :tachometer, "0.2.0"},
+  "watcher": {:hex, :watcher, "1.0.0"}}

@@ -19,7 +19,10 @@ defmodule Sideshow.Mixfile do
     [applications: [:logger, :tachometer],
      mod: {Sideshow.Application, []},
      registered: [Sideshow,
-                  Sideshow.IsolatedSupervisor]
+                  Sideshow.IsolatedSupervisor,
+                  Sideshow.TachometerEventHandler,
+                  Sideshow.Foreman,
+                  Sideshow.SchedulerUsageHandler]
     ]
   end
 
@@ -33,9 +36,9 @@ defmodule Sideshow.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:tachometer, "~> 0.1.1"},
+    [{:tachometer, "0.2.0"},
      {:mock, "~> 0.1.1", only: :test},
-     {:gen_fsm, "~>0.0.2"}]
+     {:gen_fsm, "~>0.0.4"}]
   end
 
   defp description do
