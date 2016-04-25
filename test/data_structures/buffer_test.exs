@@ -10,9 +10,11 @@ defmodule BufferTest do
     b = Buffer.add b, 3
 
     assert {{:value, 1}, b = %{}} = Buffer.remove b
+    assert  {:value, 2}           = Buffer.peek   b
     assert {{:value, 2}, b = %{}} = Buffer.remove b
     assert {{:value, 3}, b = %{}} = Buffer.remove b
     assert {:empty, _b = %{}} = Buffer.remove b
+    assert  :empty                = Buffer.peek   b
   end
 
   test "stack" do
@@ -22,9 +24,11 @@ defmodule BufferTest do
     b = Buffer.add b, 3
 
     assert {{:value, 3}, b = %{}} = Buffer.remove b
+    assert  {:value, 2}           = Buffer.peek   b
     assert {{:value, 2}, b = %{}} = Buffer.remove b
     assert {{:value, 1}, b = %{}} = Buffer.remove b
-    assert {:empty, _b = %{}} = Buffer.remove b
+    assert {:empty, _b = %{}}     = Buffer.remove b
+    assert  :empty                = Buffer.peek   b
   end
   
 end
