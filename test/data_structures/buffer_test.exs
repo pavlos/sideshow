@@ -1,4 +1,4 @@
-`defmodule BufferTest do
+defmodule BufferTest do
   use ExUnit.Case, async: true
   alias Sideshow.Stack
   alias Sideshow.Queue
